@@ -90,7 +90,7 @@
           if (existing) {
             existing.count += 1;
           } else {
-            acc.push({ ...pr, count: pr.count || 1 });
+            acc.push({ ...pr, count: parseInt(pr.count) || 1 });
           }
           return acc;
         }, []);
