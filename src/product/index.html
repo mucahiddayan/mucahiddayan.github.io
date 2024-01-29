@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://code.getmdl.io/1.3.0/material.indigo-blue.min.css"
+    />
+    <link href="../global.css" rel="stylesheet" />
+    <style>
+      .demo-card-wide.mdl-card.mdl-shadow--2dp {
+        width: 80%;
+      }
+
+      .mdl-card__actions.mdl-card--border {
+        display: flex;
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        flex-direction: column;
+      }
+
+      .add-to-card {
+        cursor: pointer;
+      }
+
+      .mdl-card__media {
+        display: flex;
+        justify-content: center;
+      }
+
+      img {
+        height: 200px;
+      }
+
+      .informations {
+        display: flex;
+        gap: 5px;
+      }
+    </style>
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <script type="module">
+      import {
+        h,
+        render,
+        signal,
+        effect
+      } from 'https://cdn.jsdelivr.net/npm/preact-htm-signals-standalone@0.0.12/+esm'
+
+      import htm from 'https://esm.sh/htm'
+      const html = htm.bind(h)
+
+      const selectedProduct = signal({})
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const product = JSON.parse(localStorage.getItem('selectedProduct'))
+        selectedProduct.value = product
+      })
+
+      function addToCard() {
+        window.parent.postMessage(
+          {
+            message: 'product#addToCard',
+            payload: { product: selectedProduct.value }
+          },
+          '*'
+        )
+      }
+
+      function back() {
+        history.back()
+        history.back()
+      }
+
+      function Product() {
+        return html`<div class="demo-card-wide mdl-card mdl-shadow--2dp">
+          <div class="mdl-card__title">
+            <h2 class="mdl-card__title-text">${selectedProduct.value.title}</h2>
+          </div>
+
+          <div class="mdl-card__media">
+            <img src="${selectedProduct.value.thumbnail}" />
+          </div>
+          <div class="mdl-card__supporting-text">
+            ${selectedProduct.value.description}
+          </div>
+
+          <div class="mdl-card__actions mdl-card--border">
+            <span
+              class="material-symbols-outlined add-to-card"
+              title="Back"
+              onClick="${() => back()}"
+            >
+              arrow_back_ios
+            </span>
+
+            <div class="mdl-layout-spacer"></div>
+            <div class="informations">
+              <span class="mdl-chip" title="Brand">
+                <span class="mdl-chip__text"
+                  >${selectedProduct.value.brand}</span
+                >
+              </span>
+              <span class="mdl-chip" title="Category">
+                <span class="mdl-chip__text"
+                  >${selectedProduct.value.category}</span
+                >
+              </span>
+              <span class="mdl-chip" title="Stock">
+                <span class="mdl-chip__text"
+                  >${selectedProduct.value.stock}</span
+                >
+              </span>
+              <span class="mdl-chip" title="Price">
+                <span class="mdl-chip__text"
+                  >$${selectedProduct.value.price}</span
+                >
+              </span>
+            </div>
+          </div>
+          <div class="mdl-card__menu">
+            <button
+              title="Add to Card"
+              onClick="${() => addToCard()}"
+              class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored"
+            >
+              <span class="material-symbols-outlined add-to-card">
+                shopping_cart
+              </span>
+            </button>
+          </div>
+        </div>`
+      }
+
+      render(html`<${Product} />`, document.body)
+    </script>
+    <title>Product</title>
+  </head>
+  <body></body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+    <link href="./global.css" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://code.getmdl.io/1.3.0/material.indigo-blue.min.css"
+    />
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <a href="/"><title>AppShell Shop</title></a>
+    <script type="module">
+      import {
+        h,
+        render,
+        signal,
+        effect,
+      } from 'https://cdn.jsdelivr.net/npm/preact-htm-signals-standalone@0.0.12/+esm';
+
+      import htm from 'https://esm.sh/htm';
+      const html = htm.bind(h);
+
+      document.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('hashchange', ({ newURL }) => {
+          const { hash, search } = new URL(newURL);
+          setPage(hash);
+        });
+
+        const initialHash = new URL(location.href)?.hash;
+        if (!initialHash) {
+          setPage('home');
+        } else {
+          setPage(initialHash);
+        }
+      });
+
+      const contentFrame = document.getElementById('content-frame');
+
+      window.addEventListener('message', ({ data: { message, payload } }) => {
+        if (message === 'products#open') {
+          location.hash = 'product';
+          localStorage.setItem(
+            'selectedProduct',
+            JSON.stringify(payload.product)
+          );
+          // location.search = encodeURIComponent(JSON.stringify(payload.product))
+        }
+        if (message === 'product#addToCard') {
+          addToCard(payload.product);
+        }
+        if (message === 'cart#updateProductCount') {
+          updateProductCount(payload.id, payload.count);
+        }
+      });
+      function setPage(hash) {
+        const page = hash?.replace('#', '');
+        contentFrame.src = `${page}/index.html`;
+      }
+
+      function updateProductCount(id, count) {
+        shoppingCart.value =
+          count > 0
+            ? shoppingCart.value.map((pr) =>
+                pr.id === id ? { ...pr, count } : pr
+              )
+            : shoppingCart.value.filter((pr) => pr.id !== id);
+      }
+
+      const shoppingCart = signal(
+        groupProductsById(
+          JSON.parse(localStorage.getItem('shoppingCart') || '[]')
+        )
+      );
+
+      effect(() => {
+        localStorage.setItem(
+          'shoppingCart',
+          JSON.stringify(shoppingCart.value)
+        );
+      });
+
+      function groupProductsById(products) {
+        return products.reduce((acc, pr) => {
+          const existing = acc.find((p) => p.id === pr.id);
+          if (existing) {
+            existing.count += 1;
+          } else {
+            acc.push({ ...pr, count: pr.count || 1 });
+          }
+          return acc;
+        }, []);
+      }
+
+      function addToCard(product) {
+        if (shoppingCart.value.find((pr) => pr.id === product.id)) {
+        }
+        shoppingCart.value = groupProductsById([
+          ...shoppingCart.value,
+          product,
+        ]);
+      }
+
+      function Cart() {
+        return html`<div
+          class="material-symbols-outlined mdl-badge mdl-badge--overlap"
+          data-badge="${shoppingCart.value.length}"
+        >
+          shopping_cart
+        </div>`;
+      }
+
+      render(html`<${Cart} />`, document.getElementById('shopping-cart'));
+    </script>
+    <style>
+      .page-content {
+        height: calc(100vh - 64px);
+      }
+
+      .page-content iframe {
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+      <header class="mdl-layout__header">
+        <div class="mdl-layout__header-row">
+          <!-- Title -->
+          <span class="mdl-layout-title"
+            ><a href=""
+              ><span class="material-symbols-outlined"> home </span></a
+            ></span
+          >
+          <!-- Add spacer, to align navigation to the right -->
+          <div class="mdl-layout-spacer"></div>
+          <!-- Navigation. We hide it in small screens. -->
+          <nav class="mdl-navigation mdl-layout--large-screen-only">
+            <a class="mdl-navigation__link" href="#products">Produkte</a>
+            <a class="mdl-navigation__link" href="#cart" id="shopping-cart"></a>
+          </nav>
+        </div>
+      </header>
+      <!-- <div class="mdl-layout__drawer">
+        <span class="mdl-layout-title">Title</span>
+        <nav class="mdl-navigation">
+          <a class="mdl-navigation__link" href="">Link</a>
+          <a class="mdl-navigation__link" href="">Link</a>
+          <a class="mdl-navigation__link" href="">Link</a>
+          <a class="mdl-navigation__link" href="">Link</a>
+        </nav>
+      </div> -->
+      <main class="mdl-layout__content">
+        <div class="page-content">
+          <iframe id="content-frame" src=""></iframe>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

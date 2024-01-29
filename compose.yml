@@ -1,0 +1,14 @@
+services:
+  frontend:
+    develop:
+      watch:
+        - action: sync
+          path: ./src
+          target: /usr/share/nginx/html/
+          ignore:
+            - node_modules/
+    build:
+      context: .
+    container_name: frontend
+    ports:
+      - '80:80'
