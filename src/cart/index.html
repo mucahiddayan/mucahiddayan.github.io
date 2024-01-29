@@ -19,6 +19,7 @@
         align-items: center;
         padding: 10px;
         flex-direction: column;
+        gap: 10px;
       }
 
       .mdl-textfield input[type='number'] {
@@ -75,7 +76,11 @@
         );
       }
 
-      function Cart() {
+      function checkout() {
+        alert('okey dude');
+      }
+
+      function Table() {
         return html`
           <table class="mdl-data-table mdl-js-data-table  mdl-shadow--2dp">
             <thead>
@@ -117,7 +122,11 @@
                     `
                   )
                 : html`<tr>
+                    <td></td>
+                    <td></td>
                     <td>No item in cart</td>
+                    <td></td>
+                    <td></td>
                   </tr>`}
               <tr>
                 <td></td>
@@ -134,6 +143,21 @@
             </tbody>
           </table>
         `;
+      }
+
+      function CheckoutButton() {
+        return html`<div class="checkout-button">
+          <button
+            onClick="${() => checkout()}"
+            class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"
+          >
+            Checkout
+          </button>
+        </div>`;
+      }
+
+      function Cart() {
+        return html`<${Table}></${Table}><${CheckoutButton}/>`;
       }
 
       render(html`<${Cart} />`, document.body);
