@@ -87,39 +87,41 @@
       function Products() {
         return products.value.length
           ? products.value.map(
-              (pr) => html`<div
-                class="demo-card-square mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col"
-              >
-                <div
-                  class="mdl-card__title mdl-card--expand"
-                  data-product-id="${pr?.id}"
-                >
-                  <h2 class="mdl-card__title-text">${pr?.title}</h2>
-                  <button
-                    title="Add to Card"
-                    disabled=${pr.stock === 0}
-                    onClick="${() => pr.stock > 0 && addToCard(pr)}"
-                    class="mdl-button mdl-js-button product-add-to-card mdl-button--fab mdl-button--colored"
+              (pr) => html`<div class="mdl-cell mdl-cell--4-col">
+                <div class="mdl-card mdl-shadow--2dp ">
+                  <div
+                    class="mdl-card__title mdl-card--expand"
+                    data-product-id="${pr?.id}"
                   >
-                    <span class="material-symbols-outlined add-to-card">
-                      shopping_cart
+                    <h2 class="mdl-card__title-text">${pr?.title}</h2>
+                    <button
+                      title="Add to Card"
+                      disabled=${pr.stock === 0}
+                      onClick="${() => pr.stock > 0 && addToCard(pr)}"
+                      class="mdl-button mdl-js-button product-add-to-card mdl-button--fab mdl-button--colored"
+                    >
+                      <span class="material-symbols-outlined add-to-card">
+                        shopping_cart
+                      </span>
+                    </button>
+                  </div>
+                  <div class="mdl-card__media">
+                    <img src="${pr.thumbnail}" />
+                  </div>
+                  <div class="mdl-card__supporting-text">
+                    ${pr?.description}
+                  </div>
+                  <div class="mdl-card__actions mdl-card--border">
+                    <a
+                      class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                      onClick="${() => openProduct(pr)}"
+                    >
+                      Details
+                    </a>
+                    <span class="mdl-chip">
+                      <span class="mdl-chip__text">${pr.stock}</span>
                     </span>
-                  </button>
-                </div>
-                <div class="mdl-card__media">
-                  <img src="${pr.thumbnail}" />
-                </div>
-                <div class="mdl-card__supporting-text">${pr?.description}</div>
-                <div class="mdl-card__actions mdl-card--border">
-                  <a
-                    class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
-                    onClick="${() => openProduct(pr)}"
-                  >
-                    Details
-                  </a>
-                  <span class="mdl-chip">
-                    <span class="mdl-chip__text">${pr.stock}</span>
-                  </span>
+                  </div>
                 </div>
               </div>`
             )
