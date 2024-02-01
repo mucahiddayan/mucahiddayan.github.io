@@ -22,8 +22,11 @@
         gap: 10px;
       }
 
-      .mdl-textfield input[type='number'] {
-        text-align: center;
+      .mdl-textfield input[type='range']::after {
+        content: attr(data-value);
+        position: absolute;
+        top: 0;
+        right: 0;
       }
       .mdl-textfield:has(input[type='number']) {
         width: 30px;
@@ -106,13 +109,20 @@
                             class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
                           >
                             <input
-                              class="mdl-textfield__input"
+                              class="mdl-slider mdl-js-slider"
+                              type="range"
+                              data-value="${pr.count}"
+                              min="0"
+                              onInput=${(e) =>
+                                e.target.setAttribute(
+                                  'data-value',
+                                  e.target.value
+                                )}
                               onBlur=${(e) =>
                                 updateProductCount(e.target.value, pr.id)}
-                              min="0"
                               max="${pr.stock}"
-                              type="number"
                               value="${pr.count}"
+                              tabindex="0"
                             />
                           </div>
                         </td>
