@@ -69,10 +69,10 @@
         );
       }
 
-      function addToCard(product) {
+      function addToCart(product) {
         window.parent.postMessage(
           {
-            message: 'product#addToCard',
+            message: 'product#addToCart',
             payload: { product },
           },
           '*'
@@ -92,7 +92,7 @@
                     <button
                       title="Add to Card"
                       disabled=${pr.stock === 0}
-                      onClick="${() => pr.stock > 0 && addToCard(pr)}"
+                      onClick="${() => pr.stock > 0 && addToCart(pr)}"
                       class="mdl-button mdl-js-button product-add-to-card mdl-button--fab mdl-button--colored"
                     >
                       <span class="material-symbols-outlined add-to-card">

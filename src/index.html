@@ -50,8 +50,8 @@
           );
           // location.search = encodeURIComponent(JSON.stringify(payload.product))
         }
-        if (message === 'product#addToCard') {
-          addToCard(payload.product);
+        if (message === 'product#addToCart') {
+          addToCart(payload.product);
         }
         if (message === 'cart#updateProductCount') {
           updateProductCount(payload.id, payload.count);
@@ -96,7 +96,7 @@
         }, []);
       }
 
-      function addToCard(product) {
+      function addToCart(product) {
         if (shoppingCart.value.find((pr) => pr.id === product.id)) {
         }
         shoppingCart.value = groupProductsById([
@@ -167,7 +167,11 @@
       </div> -->
       <main class="mdl-layout__content">
         <div class="page-content">
-          <iframe id="content-frame" src=""></iframe>
+          <iframe
+            id="content-frame"
+            src=""
+            sandbox="allow-top-navigation allow-scripts allow-same-origin allow-modals"
+          ></iframe>
         </div>
       </main>
     </div>
