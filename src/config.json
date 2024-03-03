@@ -1,0 +1,19 @@
+{
+  "modules": [
+    {
+      "label": "Produkte",
+      "url": "products"
+    },
+    {
+      "label": "Warenkorb",
+      "url": "cart",
+      "icon": "shopping_cart",
+      "component": "./cart/cart.js"
+    },
+    {
+      "label": "Ich existiere nicht",
+      "url": "not-existing",
+      "icon": ""
+    }
+  ]
+}

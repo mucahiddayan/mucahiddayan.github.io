@@ -1,3 +1,7 @@
+html,
+body {
+  font-family: monospace;
+}
 span.material-symbols-outlined {
   vertical-align: middle;
 }

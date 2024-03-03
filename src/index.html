@@ -18,13 +18,52 @@
       import {
         h,
         render,
+        Component,
         signal,
         effect,
       } from 'https://cdn.jsdelivr.net/npm/preact-htm-signals-standalone@0.0.12/+esm';
 
       import htm from 'https://esm.sh/htm';
+
+      class AsyncComponent extends Component {
+        state = {
+          Cmp: null,
+          pastDelay: false,
+        };
+
+        componentDidMount() {
+          // only show the spinner after 200ms has passed. this improves speed perception.
+          // Also, when this particular route is revisited again, the spinner won't show up
+          this.delay = setTimeout(() => {
+            this.setState({ pastDelay: true });
+          }, 200);
+          this.getComponent();
+        }
+
+        componentWillUnmount() {
+          clearTimeout(this.delay);
+        }
+
+        getComponent = async () => {
+          if (!this.state.Cmp) {
+            try {
+              const { default: Cmp } = await this.props.moduleProvider();
+              this.setState({ Cmp });
+            } catch (e) {
+              /* Handle failure to load dynamic component */
+            }
+          }
+        };
+
+        render(props, { Cmp, pastDelay }) {
+          // if Cmp is defined, show it. Otherwise, if 200ms has passed AND still no Cmp, then show spinner
+          return Cmp && html`<${Cmp} ...${props} />`;
+        }
+      }
       const html = htm.bind(h);
 
+      const loadedPage = signal('');
+      const pages = signal([]);
       document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('hashchange', ({ newURL }) => {
           const { hash, search } = new URL(newURL);
@@ -37,9 +76,27 @@
         } else {
           setPage(initialHash);
         }
+
+        fetch('./config.json')
+          .then((config) => config.json())
+          .then(
+            (config) => {
+              console.log(config);
+              pages.value = config.modules || [];
+            },
+            (err) => {
+              console.log('Loading config failed', err);
+            }
+          );
       });
 
-      const contentFrame = document.getElementById('content-frame');
+      const shaking = signal(false);
+      function shake() {
+        shaking.value = true;
+        setTimeout(() => {
+          shaking.value = false;
+        }, 250);
+      }
 
       window.addEventListener('message', ({ data: { message, payload } }) => {
         if (message === 'products#open') {
@@ -59,7 +116,7 @@
       });
       function setPage(hash) {
         const page = hash?.replace('#', '');
-        contentFrame.src = `${page}/index.html`;
+        loadedPage.value = `${page}/index.html`;
       }
 
       function updateProductCount(id, count) {
@@ -106,26 +163,74 @@
         shake();
       }
 
-      const shaking = signal(false);
-      function shake() {
-        shaking.value = true;
-        setTimeout(() => {
-          shaking.value = false;
-        }, 250);
+      function onError() {
+        alert();
       }
 
-      function Cart() {
-        return html`<div
-          data-shaking="${shaking.value}"
-          class="{${shaking.value ? 'shakining' : ''}}"
-          class="material-symbols-outlined mdl-badge mdl-badge--overlap"
-          data-badge="${shoppingCart.value.length}"
-        >
-          shopping_cart
-        </div>`;
+      function Navigation() {
+        return html`${pages.value.map(
+          (p) =>
+            html`<a class="mdl-navigation__link" href="#${p.url}">
+              ${p.component
+                ? html`<${AsyncComponent}
+                    shaking=${shaking}
+                    shoppingCart=${shoppingCart}
+                    moduleProvider=${() => import(p.component)}
+                  />`
+                : p.icon
+                ? html`<span class="material-symbols-outlined">
+                    ${p.icon}
+                  </span>`
+                : p.label}</a
+            >`
+        )}`;
       }
 
-      render(html`<${Cart} />`, document.getElementById('shopping-cart'));
+      function App() {
+        return html`
+          <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+            <header class="mdl-layout__header">
+              <div class="mdl-layout__header-row">
+                <!-- Title -->
+                <span class="mdl-layout-title"
+                  ><a href=""
+                    ><span class="material-symbols-outlined"> home </span></a
+                  ></span
+                >
+                <!-- Add spacer, to align navigation to the right -->
+                <div class="mdl-layout-spacer"></div>
+                <!-- Navigation. We hide it in small screens. -->
+                <nav class="mdl-navigation">
+                  <${Navigation} />
+                  <!-- <a class="mdl-navigation__link" href="#products">Produkte</a>
+            <a class="mdl-navigation__link" href="#cart" id="shopping-cart"></a> -->
+                </nav>
+              </div>
+            </header>
+            <!-- <div class="mdl-layout__drawer">
+        <span class="mdl-layout-title">Title</span>
+        <nav class="mdl-navigation">
+          <a class="mdl-navigation__link" href="">Link</a>
+          <a class="mdl-navigation__link" href="">Link</a>
+          <a class="mdl-navigation__link" href="">Link</a>
+          <a class="mdl-navigation__link" href="">Link</a>
+        </nav>
+      </div> -->
+            <main class="mdl-layout__content">
+              <div class="page-content">
+                <iframe
+                  onError="${onError}"
+                  id="content-frame"
+                  src="${loadedPage.value}"
+                  sandbox="allow-top-navigation allow-scripts allow-same-origin allow-modals"
+                ></iframe>
+              </div>
+            </main>
+          </div>
+        `;
+      }
+
+      render(html`<${App} />`, document.body);
     </script>
     <style>
       .page-content {
@@ -137,43 +242,5 @@
       }
     </style>
   </head>
-  <body>
-    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-      <header class="mdl-layout__header">
-        <div class="mdl-layout__header-row">
-          <!-- Title -->
-          <span class="mdl-layout-title"
-            ><a href=""
-              ><span class="material-symbols-outlined"> home </span></a
-            ></span
-          >
-          <!-- Add spacer, to align navigation to the right -->
-          <div class="mdl-layout-spacer"></div>
-          <!-- Navigation. We hide it in small screens. -->
-          <nav class="mdl-navigation">
-            <a class="mdl-navigation__link" href="#products">Produkte</a>
-            <a class="mdl-navigation__link" href="#cart" id="shopping-cart"></a>
-          </nav>
-        </div>
-      </header>
-      <!-- <div class="mdl-layout__drawer">
-        <span class="mdl-layout-title">Title</span>
-        <nav class="mdl-navigation">
-          <a class="mdl-navigation__link" href="">Link</a>
-          <a class="mdl-navigation__link" href="">Link</a>
-          <a class="mdl-navigation__link" href="">Link</a>
-          <a class="mdl-navigation__link" href="">Link</a>
-        </nav>
-      </div> -->
-      <main class="mdl-layout__content">
-        <div class="page-content">
-          <iframe
-            id="content-frame"
-            src=""
-            sandbox="allow-top-navigation allow-scripts allow-same-origin allow-modals"
-          ></iframe>
-        </div>
-      </main>
-    </div>
-  </body>
+  <body></body>
 </html>
